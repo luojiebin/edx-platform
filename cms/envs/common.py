@@ -1198,4 +1198,4 @@ AFFILIATE_COOKIE_NAME = 'affiliate_id'
 
 ############## Settings for Studio Context Sensitive Help ##############
 
-USE_EDX_PARTNER_DOCUMENTATION = False
+DOC_LINK_BASE_URL = False
