@@ -2,6 +2,7 @@
 Problem Page.
 """
 from bok_choy.page_object import PageObject
+from common.test.acceptance.pages.common.utils import click_css
 
 
 class ProblemPage(PageObject):
@@ -126,13 +127,16 @@ class ProblemPage(PageObject):
         """
         Click the Reset button.
         """
-        self.q(css='div.problem button.reset').click()
-        self.wait_for_ajax()
+        click_css(self, '.problem .reset', require_notification=False)
 
     def click_show_hide_button(self):
         """ Click the Show/Hide button. """
         self.q(css='div.problem div.action .show').click()
         self.wait_for_ajax()
+
+    def is_reset_button_present(self):
+        """ Check for the presence of the reset button. """
+        return self.q(css='.problem .reset').present
 
     def is_focus_on_problem_meta(self):
         """

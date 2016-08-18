@@ -137,6 +137,9 @@ class ProblemTypeTestMixin(object):
     Test cases shared amongst problem types.
     """
     can_submit_blank = False
+    # Flag to mark problem types that the focus is not being set to the Problem
+    # Meta currently
+    reset_focus_fail = False
 
     @attr(shard=7)
     def test_answer_correctly(self):
@@ -231,6 +234,35 @@ class ProblemTypeTestMixin(object):
         )
         self.assertIn('is-disabled', self.problem_page.q(css='div.problem button.check').attrs('class')[0])
 
+    @attr(shard=7)
+    def test_reset_clears_answer_and_focus(self):
+        """
+        Scenario: Reset will clear answers and focus on problem meta
+        If I select an answer
+        and then reset the problem
+        There should be no answer selected
+        And the focus should shift appropriately
+        """
+        # Some problem types are not focusing on the expected location.
+        if self.reset_focus_fail:
+            raise SkipTest("Test incompatible with the current problem type")
+
+        self.problem_page.wait_for(
+            lambda: self.problem_page.problem_name == self.problem_name,
+            "Make sure the correct problem is on the page"
+        )
+        self.wait_for_status('unanswered')
+        # Set an answer
+        self.answer_problem(correct=True)
+        self.problem_page.click_check()
+        self.wait_for_status('correct')
+        # clear the answers
+        self.problem_page.click_reset()
+        # Focus should change to meta
+        self.assertTrue(self.problem_page.is_focus_on_problem_meta())
+        # Answer should be reset
+        self.wait_for_status('unanswered')
+
     @attr('a11y')
     def test_problem_type_a11y(self):
         """
@@ -271,7 +303,7 @@ class AnnotationProblemTypeTest(ProblemTypeTestBase, ProblemTypeTestMixin):
     factory = AnnotationResponseXMLFactory()
 
     can_submit_blank = True
-
+    reset_focus_fail = True
     factory_kwargs = {
         'title': 'Annotation Problem',
         'text': 'The text being annotated',
@@ -722,6 +754,9 @@ class CodeProblemTypeTest(ProblemTypeTestBase, ProblemTypeTestMixin):
         """
         pass
 
+    def wait_for_status(self, status):
+        pass
+
 
 class ChoiceTextProbelmTypeTestBase(ProblemTypeTestBase):
     """
@@ -766,6 +801,7 @@ class RadioTextProblemTypeTest(ChoiceTextProbelmTypeTestBase, ProblemTypeTestMix
     problem_type = 'radio_text'
     choice_type = 'radio'
 
+    reset_focus_fail = True
     factory = ChoiceTextResponseXMLFactory()
 
     factory_kwargs = {
@@ -797,7 +833,7 @@ class CheckboxTextProblemTypeTest(ChoiceTextProbelmTypeTestBase, ProblemTypeTest
     problem_name = 'CHECKBOX TEXT TEST PROBLEM'
     problem_type = 'checkbox_text'
     choice_type = 'checkbox'
-
+    reset_focus_fail = True
     factory = ChoiceTextResponseXMLFactory()
 
     factory_kwargs = {
